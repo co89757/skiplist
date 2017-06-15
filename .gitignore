@@ -1,0 +1,8 @@
+#log files
+*.log 
+#swap files
+*.bak 
+*.orig 
+#temp files
+*.tmp 
+.vscode/
