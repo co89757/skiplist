@@ -39,25 +39,25 @@ func newNode(key string, val interface{}, height int) *SkipNode {
 func New() (list *SkipList) {
 	list = &SkipList{
 		Head:   newNode("", nil, 0),
-		Height: 0,
+		Height: 1,
 		Count:  0,
 	}
 	return
 }
 
 // return the update vector for incoming key, the insert position is the last node
-// whose key is less than incoming key or whose next is not nil
+// whose key is less than incoming key or whose next is  nil
 func (list *SkipList) updateVector(key string) (update []*SkipNode, keyExist bool) {
 	update = make([]*SkipNode, MaxHeight+1)
 	cursor := list.Head
 	for h := list.Height; h > 0; h-- {
-		for ; cursor.Forward[h].Key < key && cursor.Forward[h] != nil; cursor = cursor.Forward[h] {
+		for ; cursor.Forward[h] != nil && cursor.Forward[h].Key < key; cursor = cursor.Forward[h] {
 
 		}
 		update[h] = cursor
-		if cursor.Forward[h].Key == key {
-			keyExist = true
-		}
+	}
+	if update[1].Forward[1] != nil && update[1].Forward[1].Key == key {
+		keyExist = true
 	}
 	return
 }
@@ -87,6 +87,37 @@ func (list *SkipList) Add(key string, val interface{}) (keyExist bool) {
 		update[h].Forward[h] = newNode
 	}
 	list.Count++
+	return
+}
+
+//Get attempts to get the value for a given key, returns (value,ok) pair
+// where ok indicates whether the key exists
+func (list *SkipList) Get(key string) (value interface{}, ok bool) {
+	update, ok := list.updateVector(key)
+	if ok {
+		value = update[1].Forward[1].Value
+	}
+	return
+}
+
+//Remove removes a key and returns a boolean indicating if the key was found
+func (list *SkipList) Remove(key string) (ok bool) {
+	update, ok := list.updateVector(key)
+	if !ok {
+		return
+	}
+	nodeToDel := update[1].Forward[1]
+	for h := 1; h < list.Height+1; h++ {
+		if update[h].Forward[h] == nil || update[h].Forward[h].Key != key {
+			break
+		}
+		update[h].Forward[h] = nodeToDel.Forward[h]
+	}
+	//update height
+	for ; list.Height > 1 && list.Head.Forward[list.Height] == nil; list.Height-- {
+	}
+
+	list.Count--
 	return
 }
 
