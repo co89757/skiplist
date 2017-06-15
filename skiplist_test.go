@@ -23,3 +23,11 @@ func TestRemoveKey(t *testing.T) {
 	_, exist := list.Get("a")
 	assert.False(t, exist, "key should be removed")
 }
+
+func TestEmptyKey(t *testing.T) {
+	list := New()
+	list.Add("", 1)
+	v, ok := list.Get("")
+	assert.True(t, ok, "empty key should be allowed")
+	assert.Equal(t, 1, v, "value shoud be 1")
+}
